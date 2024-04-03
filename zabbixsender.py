@@ -24,7 +24,7 @@ try:
     ClientInfo = config["ClientInfo"]
 except KeyError:
     sys.exit("Error found in the configuration file.")
-
+    
 service = ClientInfo["service"]
 key = ClientInfo["key"]
 status_file = ClientInfo["status_file"]
@@ -34,10 +34,10 @@ pattern = ConfigInfo["pattern"]
 nbr_sec = int(ConfigInfo["nbr_sec"])
 
 #* log file
-log_file = LogInfo["log_file"]
+log_file = LogInfo["log_file"] 
 
 #* errors log file
-err_log_file = LogInfo["err_log_file"]
+err_log_file = LogInfo["err_log_file"] 
 
 #?########################################### CONFIG ##############################################################
 
@@ -63,12 +63,13 @@ log.setLevel(logging.INFO)
 #*########################################### FUNCTIONS ################################################################
 
 def get_status(file):
-    cmd = subprocess.run(['tail', '-2', file], capture_output=True).stdout.decode().strip().split('\n')
+    cmd = subprocess.run(['tail', '-3', file], capture_output=True).stdout.decode().strip().split('\n')
     status1 = cmd[0][-4:].strip()
     status2 = cmd[1][-4:].strip()
-    if status1 == '[+]' and status2 == '[+]':
+    status3 = cmd[2][-4:].strip()
+    if status1 == '[+]' and status2 == '[+]' and status3 == '[+]':
         status = '1'
-    else:
+    else: 
         status = '0'
     return status
 
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     try:
         while True:
             log.info(f"Fetching status of {service} service...")
-
+            
             #! get status
             service_status = get_status(status_file)
             response = sender(host, service, key, service_status)
@@ -100,12 +101,12 @@ if __name__ == "__main__":
                 log.error(f"{service}: {str(result).strip()}")
             else:
                 log.critical(f"{service}: Unknown Error")
-
+                
             if nbr_sec > 0:
                 log.info(f"Sleeping for {nbr_sec} seconds...")
             time.sleep(nbr_sec)
     except Exception as E:
         log.critical(E)
-
+    
 
 
